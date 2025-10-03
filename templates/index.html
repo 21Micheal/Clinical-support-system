@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Health Care Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* Light gradient background */
+      .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      
+      /* Light gradient text */
+      .gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      
+      .status-indicator {
+        transition: all 0.3s ease;
+      }
+      
+      .status-listening { color: #ef4444; }
+      .status-speaking { color: #10b981; }
+      .status-processing { color: #f59e0b; }
+      .status-idle { color: #3b82f6; }
+      
+      .symptom-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+      .symptom-item {
+        margin: 5px 0;
+        display: inline-block;
+        width: 30%;
+      }
+
+      .results-actions {
+          display: flex;
+          gap: 15px;
+          justify-content: center;
+          flex-wrap: wrap;
+          margin: 20px 0;
+      }
+
+      .results-actions .btn {
+          min-width: 200px;
+          margin: 5px;
+      }
+      
+      .icon-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      
+      .icon-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      }
+      
+      .voice-btn {
+        transition: all 0.3s ease;
+      }
+      
+      .voice-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      /* Original results section styling */
+      .icon-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding: 30px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #e3f2fd, #d1ecf1);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: 30px auto;
+      }
+
+      .icon-details {
+        font-size: 16px;
+        color: #333;
+        margin-top: 10px;
+        padding: 10px;
+        background: #ffffff;
+        border-radius: 10px;
+        text-align: center;
+        line-height: 1.6;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .self-evaluation-heading {
+        font-size: 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .diagnosis-heading {
+        font-size: 1.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        color: #f3eded;
+      }
+
+      /* Mobile optimizations */
+      @media (max-width: 768px) {
+        .container {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
+        
+        .btn-group {
+          flex-direction: column;
+          gap: 10px;
+        }
+        
+        .symptom-grid {
+          grid-template-columns: 1fr;
+        }
+        
+        .icon-section {
+          padding: 20px;
+          margin: 20px auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="gradient-bg">
+
+    <!-- Navigation -->
+    <nav class="bg-blue-100 shadow-md py-3 px-5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-12 h-12 rounded-full border-2 border-blue-500">
+        <a href="#" class="text-blue-600 text-lg font-bold">Health Center</a>
+      </div>
+
+      <button id="menu-toggle" class="text-blue-500 text-2xl md:hidden focus:outline-none">
+        ☰
+      </button>
+
+      <ul id="menu" class="hidden md:flex space-x-6 flex-1 pl-8">
+        <li><a href="#" class="text-blue-600 hover:text-blue-800">Home</a></li>
+        <li><a href="/health_records" class="text-blue-600 hover:text-blue-800">Health Records</a></li>
+        <li><a href="/outbreak-prediction" class="text-blue-600 hover:text-blue-800"> Outbreak Prediction </a></li>
+      </ul>
+
+      <div class="hidden md:flex items-center space-x-3 ml-auto">
+        <form class="flex border border-blue-300 rounded-lg overflow-hidden" action="{{ url_for('dashboard.search_disease') }}" method="get" id="searchForm">
+          <input type="search" name="query" id="searchInput" placeholder="🔍 Search Diseases..."
+                 class="px-3 py-2 focus:outline-none w-48 text-gray-700">
+          <button type="submit" class="bg-blue-500 px-4 text-white">Go</button>
+        </form>
+        <button id="startSearchSpeech" class="text-blue-500 text-lg hover:text-blue-700">
+          🎤
+        </button>
+      </div>
+      <form action="{{ url_for('auth.logout') }}" method="post" class="hidden md:block ml-4">
+        <button type="submit" class="text-blue-500 hover:text-blue-700">Logout</button>
+      </form>
+    </nav>
+
+    <!-- Outbreak Alert -->
+    <div id="outbreak-alert"
+         class="hidden flex items-start gap-3 bg-red-100 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-lg shadow-md max-w-4xl mx-auto mt-6"
+         role="alert">
+      <div class="flex-shrink-0 pt-1">
+        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" stroke-width="2"
+             viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 8v4m0 4h.01M5.07 19h13.86a2 2 0 001.73-3l-6.93-12a2 2 0 00-3.46 0l-6.93 12a2 2 0 001.73 3z"/>
+        </svg>
+      </div>
+      <div class="flex-1 text-sm font-medium leading-relaxed" id="outbreak-alert-text"></div>
+      <button onclick="document.getElementById('outbreak-alert').classList.add('hidden')"
+              class="text-red-700 hover:text-red-900 font-bold text-lg ml-4">
+        &times;
+      </button>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="absolute left-5 top-1/2 transform -translate-y-1/2 w-64 z-50">
+          {% for category, message in messages %}
+            <div class="bg-{{ category }}-100 border-l-4 border-{{ category }}-500 text-{{ category }}-700 px-4 py-3 rounded-md shadow-md mb-3">
+              <p class="text-sm font-semibold">{{ message }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <div class="content-wrapper">
+      <div class="relative flex justify-center">
+        <!-- Hero Section -->
+        <div class="container bg-gradient-to-r from-blue-100 to-blue-200 py-12 px-8 text-center rounded-xl shadow-lg w-full max-w-4xl mx-auto my-8">
+          <h1 class="text-4xl font-extrabold gradient-text mb-3">Health Care Centre</h1>
+          <h2 class="text-2xl font-semibold text-gray-800 mt-5">Welcome to Medical Health Centre</h2>
+          <p class="text-lg text-gray-700 mt-1">Your personalized Clinical Support System</p>
+          <p class="text-md text-gray-600 italic mt-1">Interact Directly with Dr. Hudson AI</p>
+
+          <!-- Voice Controls -->
+          <div class="flex flex-col items-center mt-5 gap-3">
+            <div id="bot-status" class="flex items-center gap-2 bg-black bg-opacity-80 text-white px-4 py-2 rounded-full">
+              <i id="status-icon" class="bi bi-mic"></i>
+              <span id="status-text">Ready for voice chat</span>
+            </div>
+            
+            <div class="flex gap-3">
+              <button id="startSpeechChat" class="voice-btn bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-md hover:bg-blue-600 transition">
+                <i class="bi bi-mic text-lg"></i> Start Voice Chat
+              </button>
+              <button id="startChat" class="voice-btn bg-green-500 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-md hover:bg-green-600 transition">
+                <i class="bi bi-chat-dots text-lg"></i> Consult Dr. Hudson AI
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Symptom Assessment -->
+      <div class="container my-4 glass-card rounded-2xl p-6 shadow-xl max-w-4xl mx-auto">
+        <h1 class="self-evaluation-heading">Start Symptom Assessment</h1>
+        <form id="diagnosis-form" method="post">
+            <!-- Remove action="/predict" since we're handling with JavaScript -->
+            <input type="hidden" id="predicted-disease" value="{{ predicted_disease }}">
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="age" class="form-label">Age:</label>
+                    <input type="number" class="form-control" id="age" name="age"
+                          placeholder="Enter your age" min="0" max="99" maxlength="2" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="gender" class="form-label">Gender:</label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="" disabled selected>Select your gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="area" class="form-label">Geographical Area:</label>
+                    <select class="form-select" id="area" name="area" required>
+                        <option value="" disabled selected>Select your county</option>
+                        <option value="Baringo">Baringo</option>
+                        <option value="Bomet">Bomet</option>
+                        <option value="Bungoma">Bungoma</option>
+                        <option value="Busia">Busia</option>
+                        <option value="Elgeyo-Marakwet">Elgeyo-Marakwet</option>
+                        <option value="Embu">Embu</option>
+                        <option value="Garissa">Garissa</option>
+                        <option value="Homa Bay">Homa Bay</option>
+                        <option value="Isiolo">Isiolo</option>
+                        <option value="Kajiado">Kajiado</option>
+                        <option value="Kakamega">Kakamega</option>
+                        <option value="Kericho">Kericho</option>
+                        <option value="Kiambu">Kiambu</option>
+                        <option value="Kilifi">Kilifi</option>
+                        <option value="Kirinyaga">Kirinyaga</option>
+                        <option value="Kisii">Kisii</option>
+                        <option value="Kisumu">Kisumu</option>
+                        <option value="Kitui">Kitui</option>
+                        <option value="Kwale">Kwale</option>
+                        <option value="Laikipia">Laikipia</option>
+                        <option value="Lamu">Lamu</option>
+                        <option value="Machakos">Machakos</option>
+                        <option value="Makueni">Makueni</option>
+                        <option value="Mandera">Mandera</option>
+                        <option value="Marsabit">Marsabit</option>
+                        <option value="Meru">Meru</option>
+                        <option value="Migori">Migori</option>
+                        <option value="Mombasa">Mombasa</option>
+                        <option value="Murang'a">Murang'a</option>
+                        <option value="Nairobi">Nairobi</option>
+                        <option value="Nakuru">Nakuru</option>
+                        <option value="Nandi">Nandi</option>
+                        <option value="Narok">Narok</option>
+                        <option value="Nyamira">Nyamira</option>
+                        <option value="Nyandarua">Nyandarua</option>
+                        <option value="Nyeri">Nyeri</option>
+                        <option value="Samburu">Samburu</option>
+                        <option value="Siaya">Siaya</option>
+                        <option value="Taita-Taveta">Taita-Taveta</option>
+                        <option value="Tana River">Tana River</option>
+                        <option value="Tharaka-Nithi">Tharaka-Nithi</option>
+                        <option value="Trans Nzoia">Trans Nzoia</option>
+                        <option value="Turkana">Turkana</option>
+                        <option value="Uasin Gishu">Uasin Gishu</option>
+                        <option value="Vihiga">Vihiga</option>
+                        <option value="Wajir">Wajir</option>
+                        <option value="West Pokot">West Pokot</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="manual-symptoms" class="form-label">Enter Symptoms (comma-separated):</label>
+                <textarea class="form-control" id="manual-symptoms" name="manual_symptoms" rows="3" 
+                          placeholder="Type symptoms such as itching, headache, fever, etc."></textarea>
+            </div>
+
+            <div class="button-row flex flex-wrap gap-3 justify-center">
+                <button type="button" class="toggle-btn btn btn-primary">Or Select Symptoms</button>
+                <button type="button" id="startSymptomsSpeech" class="btn btn-outline-primary flex items-center gap-2">
+                    <i class="bi bi-mic"></i> Start Speech Recognition
+                </button>
+                <button type="submit" class="btn btn-success flex items-center gap-2" id="diagnosis-button">
+                    <i class="bi bi-search"></i> Diagnose
+                </button>
+            </div>
+
+            <div id="symptom-list" class="symptom-list symptom-grid mt-4 p-4 border rounded-lg bg-gray-50" style="display: none;">
+                {% for symptom, index in symptoms_dict.items() %}
+                <div class="form-check symptom-item">
+                    <input class="form-check-input" type="checkbox" id="symptom-{{ index }}" name="selected_symptoms" value="{{ symptom }}">
+                    <label class="form-check-label" for="symptom-{{ index }}">{{ symptom.replace('_', ' ') }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+      </div>
+
+      <!-- Diagnosis Results - Original Layout -->
+            <!-- Diagnosis Results - Original Layout -->
+      <div id="icon-section-container">
+        <h2 class="diagnosis-heading">
+          {% if predicted_disease %}
+            Diagnosis Results:
+          {% else %}
+            Please provide symptoms for diagnosis.
+          {% endif %}
+        </h2>
+
+        {% if predicted_disease %}  <!-- THIS IF BLOCK NEEDS AN ENDIF -->
+        <div class="container icon-section">
+          <div class="icon-card">
+            <i class="bi bi-heart-pulse text-3xl gradient-text mb-2"></i>
+            <span class="font-bold gradient-text">Disease</span>
+            {% if predicted_disease %}
+              <p class="icon-details mt-2">You are likely to be suffering from <strong>{{ predicted_disease }}</strong>.</p>
+            {% endif %}
+          </div>
+
+          <div class="icon-card">
+            <i class="bi bi-file-text text-3xl gradient-text mb-2"></i>
+            <span class="font-bold gradient-text">Description</span>
+            {% if dis_des %}
+              <div class="icon-details mt-2">
+                {% for line in dis_des.split('.') if line.strip() %}
+                  <p>{{ line.strip() }}</p>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="icon-card">
+            <i class="bi bi-apple text-3xl gradient-text mb-2"></i>
+            <span class="font-bold gradient-text">Diets</span>
+            {% if my_diet %}
+              <ul class="icon-details mt-2">
+                {% for diet in my_diet %}
+                  <li>{{ diet }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="icon-card">
+            <i class="bi bi-pills text-3xl gradient-text mb-2"></i>
+            <span class="font-bold gradient-text">Medications</span>
+            {% if medications %}
+              <ul class="icon-details mt-2">
+                {% for medication in medications %}
+                  <li>{{ medication }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <div class="icon-card">
+            <i class="bi bi-bicycle text-3xl gradient-text mb-2"></i>
+            <span class="font-bold gradient-text">Workouts</span>
+            {% if workout %}
+              <ul class="icon-details mt-2">
+                {% for workout_item in workout %}
+                  <li>{{ workout_item }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+          <div class="icon-card">
+            <i class="bi bi-shield-check text-3xl gradient-text mb-2"></i>
+            <span class="font-bold gradient-text">Precautions</span>
+            {% if my_precautions %}
+              <ul class="icon-details mt-2">
+                {% for precaution in my_precautions %}
+                  <li>{{ precaution }}</li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+
+          <!-- Debug section with proper syntax -->
+          <div style="display: none !important;">
+            <p>Predicted Disease: {{ predicted_disease }}</p>
+            <p>Prediction ID: {{ prediction_id }}</p>
+            <p>Has predicted_disease: {{ predicted_disease is defined }}</p>
+            <p>Has prediction_id: {{ prediction_id is defined }}</p>
+          </div>
+          
+          {% if predicted_disease %}
+          <div class="results-actions text-center mt-4">
+              <p>Debug: Showing buttons because predicted_disease exists</p>
+              <a href="/disease_stats/{{ predicted_disease }}" class="btn btn-primary btn-lg mt-4">
+                  View Disease Prevalence
+              </a>
+              
+              {% if prediction_id is defined and prediction_id %}
+              <a href="/view_recommendations/{{ prediction_id }}" class="btn btn-success btn-lg mt-4">
+                  <i class="fas fa-lightbulb"></i> Get AI Recommendations
+              </a>
+              {% else %}
+              <p class="text-warning">No prediction ID available</p>
+              {% endif %}
+          </div>
+          {% else %}
+          <p class="text-muted">No diagnosis results to show actions for</p>
+          {% endif %}
+        </div>  <!-- This closes the container icon-section -->
+        {% endif %}  <!-- ADD THIS MISSING ENDIF FOR THE PREDICTED_DISEASE CHECK -->
+      </div>
+    </div>
+
+    <!-- Original Footer -->
+    <footer class="bg-green-50 py-6">
+      <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-white p-4 rounded-xl shadow">
+            <h3 class="text-lg font-semibold text-green-700 flex items-center">
+              <span class="mr-2">ℹ️</span> Dr Hudson AI
+            </h3>
+            <p class="text-gray-600 mt-2">
+              Dr Hudson AI is an Advanced AI-Powered Medical Platform and Decision support for all humankind.
+            </p>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl shadow">
+            <h3 class="text-lg font-semibold text-green-700 flex items-center">
+              <span class="mr-2">⚡</span> Quick Links
+            </h3>
+            <ul class="mt-2 text-gray-600">
+              <li><a href="/about" class="hover:text-green-700">› Privacy Policy</a></li>
+              <li><a href="/contact" class="hover:text-green-700">› Stay in Touch</a></li>
+              <li><a href="/developer" class="text-blue-600 hover:text-blue-800">Developer</a></li>
+              <li><a href="/blog" class="text-blue-600 hover:text-blue-800">Blog</a></li>
+            </ul>
+          </div>
+
+          <div class="bg-red-100 p-4 rounded-xl shadow border-l-4 border-red-500">
+            <h3 class="text-lg font-semibold text-red-700 flex items-center">
+              <span class="mr-2">⚠️</span> Important Notice
+            </h3>
+            <p class="text-red-600 mt-2">
+              AI responses are based on general medical knowledge and may not account for your specific situation.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-6 text-center text-gray-600">
+          © 2025 Dr Hudson AI All rights reserved.
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <script>
+      // Mobile menu toggle
+      document.getElementById('menu-toggle')?.addEventListener('click', () => {
+        const menu = document.getElementById('menu');
+        menu?.classList.toggle('hidden');
+        menu?.classList.toggle('md:flex');
+        menu?.classList.toggle('absolute');
+        menu?.classList.toggle('top-16');
+        menu?.classList.toggle('left-0');
+        menu?.classList.toggle('w-full');
+        menu?.classList.toggle('bg-white');
+        menu?.classList.toggle('p-4');
+        menu?.classList.toggle('shadow-lg');
+        menu?.classList.toggle('flex-col');
+      });
+
+      // Symptoms list toggle
+      document.querySelector('.toggle-btn')?.addEventListener('click', () => {
+        const symptomList = document.getElementById('symptom-list');
+        if (symptomList) {
+          symptomList.style.display = symptomList.style.display === 'none' ? 'grid' : 'none';
+        }
+      });
+
+      // Age input validation
+      document.getElementById('age')?.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 2) value = value.slice(0, 2);
+        const numValue = parseInt(value);
+        if (numValue > 99) value = '99';
+        if (numValue < 0) value = '0';
+        e.target.value = value;
+      });
+
+      // Voice chat button fix
+      document.getElementById('startSpeechChat')?.addEventListener('click', function() {
+        if (window.voiceChatbot) {
+          window.voiceChatbot.startVoiceChat();
+        } else {
+          console.log('Voice chatbot not initialized');
+        }
+      });
+
+      // Open chatbot interface
+      document.getElementById('startChat')?.addEventListener('click', function() {
+        window.open("/chatbot/interface", "_blank");
+      });
+    </script>
+  </body>
+</html>

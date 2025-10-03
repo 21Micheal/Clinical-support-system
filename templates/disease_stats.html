@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ disease }} Statistics - Health Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+      :root {
+        --primary: #2c5aa0;
+        --secondary: #6c757d;
+        --success: #198754;
+        --light-bg: #f8f9fa;
+        --border: #e9ecef;
+        --shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+      }
+
+      body {
+        background-color: #fafbfc;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      }
+
+      .navbar {
+        background: linear-gradient(135deg, var(--primary) 0%, #1e4080 100%);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        font-weight: 700;
+        font-size: 1.4rem;
+      }
+
+      .nav-link {
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .nav-link:hover {
+        transform: translateY(-1px);
+      }
+
+      .page-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+      }
+
+      .stats-card {
+        background: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1.5rem;
+      }
+
+      .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .stats-card .card-header {
+        background: white;
+        border-bottom: 2px solid var(--light-bg);
+        font-weight: 600;
+        color: var(--primary);
+        padding: 1rem 1.5rem;
+        border-radius: 15px 15px 0 0 !important;
+      }
+
+      .chart-container {
+        padding: 1.5rem;
+        height: 300px;
+      }
+
+      #map {
+        height: 500px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        margin: 1rem 0;
+      }
+
+      .table-hover tbody tr:hover {
+        background-color: rgba(44, 90, 160, 0.05);
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, #1e4080 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(44, 90, 160, 0.3);
+      }
+
+      .insight-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        margin: 1rem 0;
+        display: inline-block;
+      }
+
+      .section-title {
+        color: var(--primary);
+        font-weight: 700;
+        margin: 2rem 0 1rem 0;
+        border-left: 4px solid var(--primary);
+        padding-left: 1rem;
+      }
+
+      .export-btn {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        margin: 1rem 0;
+      }
+
+      .modal-header {
+        background: linear-gradient(135deg, var(--primary) 0%, #1e4080 100%);
+        color: white;
+        border-radius: 15px 15px 0 0;
+      }
+
+      @media (max-width: 768px) {
+        .page-header {
+          padding: 2rem 0;
+          border-radius: 0 0 15px 15px;
+        }
+        
+        .chart-container {
+          height: 250px;
+        }
+        
+        #map {
+          height: 400px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-heartbeat me-2"></i>Health Analytics
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="/predict"><i class="fas fa-home me-1"></i>Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="/health_records"><i class="fas fa-file-medical me-1"></i>Records</a></li>
+            <li class="nav-item"><a class="nav-link" href="/outbreak-prediction"><i class="fas fa-chart-bar me-1"></i>Statistics</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-h me-1"></i>More
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/about"><i class="fas fa-info-circle me-2"></i>About</a></li>
+                <li><a class="dropdown-item" href="/contact"><i class="fas fa-envelope me-2"></i>Contact</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="container text-center">
+        <h1 class="display-5 fw-bold mb-3">{{ disease }} Statistics</h1>
+        <p class="lead mb-0">Comprehensive analysis and geographical distribution</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Key Insight -->
+      {% if message %}
+      <div class="text-center">
+        <div class="insight-badge">
+          <i class="fas fa-lightbulb me-2"></i>{{ message }}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Charts Section -->
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="stats-card">
+            <div class="card-header d-flex align-items-center">
+              <i class="fas fa-venus-mars me-2"></i>Gender Distribution
+            </div>
+            <div class="chart-container">
+              <canvas id="genderChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="stats-card">
+            <div class="card-header d-flex align-items-center">
+              <i class="fas fa-users me-2"></i>Age Group Distribution
+            </div>
+            <div class="chart-container">
+              <canvas id="ageGroupChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Tables -->
+      <div class="row mt-4">
+        <div class="col-md-6">
+          <div class="stats-card">
+            <div class="card-header d-flex align-items-center">
+              <i class="fas fa-table me-2"></i>Gender Statistics
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Gender</th>
+                      <th class="text-end">Cases</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for stat in gender_stats %}
+                    <tr>
+                      <td>{{ stat.gender }}</td>
+                      <td class="text-end fw-bold">{{ stat.cases }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="stats-card">
+            <div class="card-header d-flex align-items-center">
+              <i class="fas fa-table me-2"></i>Age Group Statistics
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Age Group</th>
+                      <th class="text-end">Cases</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for stat in age_group_stats %}
+                    <tr>
+                      <td>{{ stat.age_group }}</td>
+                      <td class="text-end fw-bold">{{ stat.cases }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Map Section -->
+      <h3 class="section-title mt-5">
+        <i class="fas fa-map-marked-alt me-2"></i>Geographical Distribution
+      </h3>
+      <p class="text-muted mb-3">Interactive map showing disease prevalence across regions</p>
+      
+      <div id="map"></div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-3">
+        <button id="export-data" class="export-btn">
+          <i class="fas fa-download me-2"></i>Export Data
+        </button>
+        <a href="{{ url_for('action.log_action', disease=disease) }}" class="btn btn-primary">
+          <i class="fas fa-clipboard-list me-2"></i>Log Action
+        </a>
+      </div>
+    </div>
+
+    <!-- Disease Breakdown Modal -->
+    <div class="modal fade" id="diseaseModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Disease Breakdown for <span id="modal-region-name"></span></h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <ul id="disease-breakdown-list" class="list-group"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outbreak Modal -->
+    {% if outbreak_notification %}
+    <div class="modal fade" id="outbreakModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Outbreak Alert</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            {{ outbreak_notification }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const outbreakModal = new bootstrap.Modal(document.getElementById('outbreakModal'));
+      outbreakModal.show();
+    </script>
+    {% endif %}
+
+    <!-- Data Scripts -->
+    <script id="disease-data" type="application/json">{{ disease_data | tojson }}</script>
+    <script id="gender-stats" type="application/json">{{ gender_stats | tojson }}</script>
+    <script id="age-group-stats" type="application/json">{{ age_group_stats | tojson }}</script>
+
+    <!-- External Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+  </body>
+</html>

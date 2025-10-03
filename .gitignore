@@ -1,0 +1,33 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Model files
+models/*.h5
+models/*.keras
+*.h5
+*.pth
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Environment
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log

@@ -1,0 +1,12 @@
+Model,Accuracy,Precision,Recall,F1-Score
+SVC,1.0,1.0,1.0,1.0
+RandomForest,1.0,1.0,1.0,1.0
+KNeighbors,1.0,1.0,1.0,1.0
+SVC,1.0,1.0,1.0,1.0
+RandomForest,1.0,1.0,1.0,1.0
+KNeighbors,1.0,1.0,1.0,1.0
+MultinomialNB,1.0,1.0,1.0,1.0
+SVC,1.0,1.0,1.0,1.0
+RandomForest,1.0,1.0,1.0,1.0
+KNeighbors,1.0,1.0,1.0,1.0
+MultinomialNB,1.0,1.0,1.0,1.0

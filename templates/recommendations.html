@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Recommendations - {{ prediction.predicted_disease }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .recommendations-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .disease-name {
+            font-size: 1.3em;
+            margin: 15px 0;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .urgency-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .urgency-high {
+            background: #ff4444;
+            animation: pulse 2s infinite;
+        }
+
+        .urgency-moderate {
+            background: #ff9800;
+        }
+
+        .urgency-low {
+            background: #4CAF50;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            font-size: 1.3em;
+        }
+
+        .action-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .action-card:hover {
+            transform: translateX(5px);
+        }
+
+        .priority-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .urgency-tag {
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #667eea;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px #667eea;
+        }
+
+        .timeline-timeframe {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .question-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            font-size: 0.95em;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .option-btn.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .alert-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+        .alert-high {
+            background: #ffebee;
+            border-left: 5px solid #ff4444;
+        }
+
+        .alert-moderate {
+            background: #fff3e0;
+            border-left: 5px solid #ff9800;
+        }
+
+        .alert-icon {
+            font-size: 1.5em;
+        }
+
+        .risk-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ff9800;
+        }
+
+        .risk-level {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .risk-high {
+            background: #ffebee;
+            color: #ff4444;
+        }
+
+        .risk-medium {
+            background: #fff3e0;
+            color: #ff9800;
+        }
+
+        .emergency-warning {
+            background: #ff4444;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .emergency-warning h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .emergency-list {
+            text-align: left;
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .emergency-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .emergency-list li::before {
+            content: '⚠️ ';
+            margin-right: 10px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .feedback-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .feedback-btn {
+            padding: 10px 25px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .feedback-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .feedback-btn.submitted {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+            cursor: default;
+        }
+
+        .category-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .back-button {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: #5a6268;
+            text-decoration: none;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            .section {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .feedback-buttons {
+                flex-direction: column;
+            }
+
+            .feedback-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="recommendations-container">
+        <div class="header">
+            <h1><i class="fas fa-heartbeat"></i> Your Personalized Health Recommendations</h1>
+            <div class="disease-name">{{ prediction.predicted_disease }}</div>
+            <p style="margin-top: 10px;">Based on your symptoms and health profile</p>
+            <div class="urgency-badge urgency-{{ recommendations.urgency_level }}">
+                {% if recommendations.urgency_level == 'high' %}
+                    HIGH PRIORITY - Immediate Attention Required
+                {% elif recommendations.urgency_level == 'moderate' %}
+                    MODERATE PRIORITY - Medical Consultation Recommended
+                {% else %}
+                    LOW PRIORITY - Monitor and Self-Care
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="content">
+            <a href="/dashboard" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+
+            <!-- Primary Actions Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon"><i class="fas fa-bullseye"></i></span>
+                    Immediate Actions Required
+                </h2>
+                {% for action in recommendations.primary_actions %}
+                <div class="action-card">
+                    <span class="priority-badge">Priority {{ action.priority }}</span>
+                    <h3>{{ action.action }}</h3>
+                    <p style="color: #666; margin: 10px 0;">{{ action.reason }}</p>
+                    <p class="urgency-tag">{{ action.urgency }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Timeline Section -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+                    Action Timeline
+                </h2>
+                <div class="timeline">
+                    {% for item in recommendations.timeline %}
+                    <div class="timeline-item">
+                        <div class="timeline-timeframe">{{ item.timeframe }}</div>
+                        <div>{{ item.action }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Demographic Recommendations -->
+            {% if recommendations.demographic_specific %}
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon"><i class="fas fa-user"></i></span>
+                    Personalized for You
+                </h2>
+                {% for rec in recommendations.demographic_specific %}
+                <div class="action-card">
+                    <span class="category-badge">{{ rec.category }}</span>
+                    <p style="font-weight: 600; margin: 10px 0;">{{ rec.advice }}</p>
+                    <p style="color: #666; font-size: 0.9em;">{{ rec.reason }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Location Alerts -->
+            {% if recommendations.location_alerts %}
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+                    Area Health Alerts
+                </h2>
+                {% for alert in recommendations.location_alerts %}
+                <div class="alert-box alert-{{ alert.severity }}">
+                    <div class="alert-icon">
+                        {% if alert.severity == 'high' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <h4>{{ alert.message }}</h4>
+                        <p style="margin: 8px 0;">{{ alert.advice }}</p>
+                        {% if alert.type == 'outbreak_alert' %}
+                            <p style="font-weight: 600;">Cases detected: {{ alert.count }}</p>
+                        {% elif alert.diseases %}
+                            <p style="margin-top: 10px;">Other active diseases:</p>
+                            <ul style="margin-left: 20px;">
+                                {% for disease in alert.diseases %}
+                                <li>{{ disease.name }} ({{ disease.cases }} cases)</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Risk Factors -->
+            {% if recommendations.risk_factors %}
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon"><i class="fas fa-shield-alt"></i></span>
+                    Risk Factors to Consider
+                </h2>
+                {% for factor in recommendations.risk_factors %}
+                <div class="risk-card">
+                    <span class="risk-level risk-{{ factor.level }}">{{ factor.level|upper }} RISK</span>
+                    <h4>{{ factor.factor }}</h4>
+                    <p style="margin: 8px 0; color: #666;">{{ factor.description }}</p>
+                    <p style="font-weight: 600; color: #667eea;"><i class="fas fa-lightbulb"></i> {{ factor.mitigation }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Follow-up Questions -->
+            <div class="section">
+                <h2 class="section-title">
+                    <span class="icon"><i class="fas fa-question-circle"></i></span>
+                    Help Us Understand Better
+                </h2>
+                <p style="margin-bottom: 20px; color: #666;">
+                    Answer these questions to get more accurate recommendations
+                </p>
+                <div id="followupQuestions">
+                    {% set question_index = 0 %}
+                    {% for category, questions in recommendations.follow_up_questions.items() %}
+                        {% if questions %}
+                            {% for question in questions %}
+                            <div class="question-card">
+                                <div class="question-text">{{ question_index + 1 }}. {{ question.question }}</div>
+                                <div class="options-group">
+                                    {% for option in question.options %}
+                                    <button class="option-btn" 
+                                            onclick="selectOption({{ question_index }}, '{{ option }}', '{{ question.question }}', '{{ category }}', this)">
+                                        {{ option }}
+                                    </button>
+                                    {% endfor %}
+                                </div>
+                                {% if question.helps_determine %}
+                                <p style="margin-top: 10px; color: #999; font-size: 0.85em;">
+                                    <i class="fas fa-info-circle"></i> This helps determine: {{ question.helps_determine }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            {% set question_index = question_index + 1 %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <button class="btn-primary" onclick="submitFollowup()">
+                    <i class="fas fa-paper-plane"></i> Submit Answers
+                </button>
+            </div>
+
+            <!-- Emergency Indicators -->
+            <div class="emergency-warning">
+                <h3><i class="fas fa-ambulance"></i> When to Seek IMMEDIATE Emergency Help</h3>
+                <ul class="emergency-list">
+                    {% for sign in recommendations.when_to_seek_help.general_warning_signs %}
+                    <li>{{ sign }}</li>
+                    {% endfor %}
+                    
+                    {% if recommendations.when_to_seek_help.disease_specific_signs %}
+                    <li style="border-top: 2px solid white; margin-top: 10px; padding-top: 15px;">
+                        <strong>--- Disease-Specific Signs ---</strong>
+                    </li>
+                    {% for sign in recommendations.when_to_seek_help.disease_specific_signs %}
+                    <li>{{ sign }}</li>
+                    {% endfor %}
+                    {% endif %}
+                </ul>
+                <p style="margin-top: 15px; font-size: 1.1em;">
+                    {{ recommendations.when_to_seek_help.emergency_action }}
+                </p>
+            </div>
+
+            <!-- Feedback Section -->
+            <div class="feedback-section">
+                <h3>Was this information helpful?</h3>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn" onclick="submitFeedback('helpful')">
+                        <i class="fas fa-thumbs-up"></i> Very Helpful
+                    </button>
+                    <button class="feedback-btn" onclick="submitFeedback('somewhat')">
+                        <i class="fas fa-hand-peace"></i> Somewhat Helpful
+                    </button>
+                    <button class="feedback-btn" onclick="submitFeedback('not_helpful')">
+                        <i class="fas fa-thumbs-down"></i> Not Helpful
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const predictionId = {{ prediction.id }};
+        let followupResponses = [];
+
+        function selectOption(questionIndex, answer, question, category, button) {
+            // Deselect all options in this question group
+            const optionsGroup = button.parentElement;
+            optionsGroup.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Select this option
+            button.classList.add('selected');
+
+            // Store the response
+            const existingIndex = followupResponses.findIndex(r => r.question === question);
+            if (existingIndex >= 0) {
+                followupResponses[existingIndex].answer = answer;
+            } else {
+                followupResponses.push({
+                    question: question,
+                    answer: answer,
+                    category: category
+                });
+            }
+            
+            console.log('✅ Selected option:', { question, answer, category });
+            console.log('📊 Current responses:', followupResponses);
+        }
+
+        function submitFollowup(event) {  // ADD event parameter
+            if (event) event.preventDefault(); // Prevent default if it's a form submission
+            
+            if (followupResponses.length === 0) {
+                alert('Please answer at least one question before submitting.');
+                return;
+            }
+
+            console.log('📤 Submitting followup responses:', followupResponses);
+
+            fetch('/save_followup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prediction_id: predictionId,
+                    responses: followupResponses
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✓ Thank you! Your responses have been saved and will help improve your care.');
+                    // Optionally disable the submit button
+                    const submitButton = document.querySelector('button[onclick="submitFollowup()"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = '✓ Submitted';
+                        submitButton.style.background = '#4CAF50';
+                        submitButton.onclick = null; // Remove the click handler
+                    }
+                } else {
+                    alert('Error saving responses: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving your responses.');
+            });
+        }
+
+        function submitFeedback(type, event) {  // ADD event parameter
+            if (event) event.preventDefault();
+            
+            const button = event ? event.target : null;
+            
+            console.log('📤 Submitting feedback:', type);
+
+            fetch('/recommendation_feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    prediction_id: predictionId,
+                    feedback_type: type
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update all feedback buttons to show submitted state
+                    document.querySelectorAll('.feedback-btn').forEach(btn => {
+                        btn.disabled = true;
+                        btn.classList.add('submitted');
+                    });
+                    
+                    if (button) {
+                        button.innerHTML = '<i class="fas fa-check"></i> Thank you!';
+                    }
+                    
+                    // Show a nice message
+                    setTimeout(() => {
+                        alert('✓ ' + data.message);
+                    }, 300);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving your feedback.');
+            });
+        }
+
+        // Print functionality
+        function printRecommendations() {
+            window.print();
+        }
+
+        // Better event listener setup
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add print button
+            const backButton = document.querySelector('.back-button');
+            if (backButton) {
+                const printBtn = document.createElement('button');
+                printBtn.className = 'back-button';
+                printBtn.style.marginLeft = '10px';
+                printBtn.innerHTML = '<i class="fas fa-print"></i> Print';
+                printBtn.onclick = printRecommendations;
+                backButton.parentNode.insertBefore(printBtn, backButton.nextSibling);
+            }
+
+            // Better event listeners for feedback buttons
+            document.querySelectorAll('.feedback-btn').forEach(button => {
+                const type = button.getAttribute('data-feedback-type') || 
+                            button.textContent.toLowerCase().includes('very') ? 'helpful' :
+                            button.textContent.toLowerCase().includes('somewhat') ? 'somewhat' : 'not_helpful';
+                
+                button.addEventListener('click', (e) => submitFeedback(type, e));
+            });
+
+            // Better event listener for submit button (alternative to onclick)
+            const submitButton = document.querySelector('button[onclick="submitFollowup()"]');
+            if (submitButton) {
+                submitButton.addEventListener('click', submitFollowup);
+            }
+
+            console.log('✅ Recommendation page loaded successfully');
+            console.log('📌 Prediction ID:', predictionId);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outbreak Prediction Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --critical-color: #dc3545;
+            --high-color: #fd7e14;
+            --medium-color: #ffc107;
+            --low-color: #28a745;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .risk-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+
+        .risk-critical { background: var(--critical-color); color: white; }
+        .risk-high { background: var(--high-color); color: white; }
+        .risk-medium { background: var(--medium-color); color: #000; }
+        .risk-low { background: var(--low-color); color: white; }
+
+        .prediction-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.3s;
+        }
+
+        .prediction-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .prediction-card.critical { border-left-color: var(--critical-color); }
+        .prediction-card.high { border-left-color: var(--high-color); }
+        .prediction-card.medium { border-left-color: var(--medium-color); }
+        .prediction-card.low { border-left-color: var(--low-color); }
+
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            height: 400px;
+        }
+
+        .recommendation-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-list li {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .hotspot-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: var(--critical-color);
+        }
+
+        .trend-down {
+            color: var(--low-color);
+        }
+
+        .confidence-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .confidence-high { background: #28a745; }
+        .confidence-medium { background: #ffc107; }
+        .confidence-low { background: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-header">
+        <div class="container">
+            <h1 class="mb-2">🔬 AI Outbreak Prediction Dashboard</h1>
+            <p class="mb-0">Real-time disease outbreak forecasting and monitoring</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <div class="stat-label">Critical Alerts</div>
+                    <div class="stat-number text-danger" id="criticalCount">-</div>
+                    <small>Immediate action required</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <div class="stat-label">High Risk</div>
+                    <div class="stat-number text-warning" id="highCount">-</div>
+                    <small>Enhanced monitoring</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <div class="stat-label">Active Predictions</div>
+                    <div class="stat-number text-primary" id="totalPredictions">-</div>
+                    <small>Disease-location pairs</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card text-center">
+                    <div class="stat-label">Hotspots</div>
+                    <div class="stat-number text-info" id="hotspotCount">-</div>
+                    <small>High-risk locations</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-box">
+            <div class="row align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Disease</label>
+                    <select id="diseaseSelect" class="form-select">
+                        <option value="">All Diseases</option>
+                        <option value="Fungal infection">Fungal infection</option>
+                        <option value="Allergy">Allergy</option>
+                        <option value="GERD">GERD</option>
+                        <option value="Chronic cholestasis">Chronic cholestasis</option>
+                        <option value="Drug Reaction">Drug Reaction</option>
+                        <option value="Peptic ulcer diseae">Peptic ulcer diseae</option>
+                        <option value="AIDS">AIDS</option>
+                        <option value="Diabetes ">Diabetes </option>
+                        <option value="Gastroenteritis">Gastroenteritis</option>
+                        <option value="Bronchial Asthma">Bronchial Asthma</option>
+                        <option value="Hypertension ">Hypertension </option>
+                        <option value="Migraine">Migraine</option>
+                        <option value="Cervical spondylosis">Cervical spondylosis</option>
+                        <option value="Paralysis (brain hemorrhage)">Paralysis (brain hemorrhage)</option>
+                        <option value="Jaundice">Jaundice</option>
+                        <option value="Malaria">Malaria</option>
+                        <option value="Chicken pox">Chicken pox</option>
+                        <option value="Dengue">Dengue</option>
+                        <option value="Typhoid">Typhoid</option>
+                        <option value="hepatitis A">hepatitis A</option>
+                        <option value="Hepatitis B">Hepatitis B</option>
+                        <option value="Hepatitis C">Hepatitis C</option>
+                        <option value="Hepatitis D">Hepatitis D</option>
+                        <option value="Hepatitis E">Hepatitis E</option>
+                        <option value="Alcoholic hepatitis">Alcoholic hepatitis</option>
+                        <option value="Tuberculosis">Tuberculosis</option>
+                        <option value="Common Cold">Common Cold</option>
+                        <option value="Pneumonia">Pneumonia</option>
+                        <option value="Dimorphic hemmorhoids(piles)">Dimorphic hemmorhoids(piles)</option>
+                        <option value="Heart attack">Heart attack</option>
+                        <option value="Varicose veins">Varicose veins</option>
+                        <option value="Hypothyroidism">Hypothyroidism</option>
+                        <option value="Hyperthyroidism">Hyperthyroidism</option>
+                        <option value="Hypoglycemia">Hypoglycemia</option>
+                        <option value="Osteoarthristis">Osteoarthristis</option>
+                        <option value="Arthritis">Arthritis</option>
+                        <option value=" (vertigo) Paroymsal  Positional Vertigo"> (vertigo) Paroymsal Positional Vertigo</option>
+                        <option value="Acne">Acne</option>
+                        <option value="Urinary tract infection">Urinary tract infection</option>
+                        <option value="Psoriasis">Psoriasis</option>
+                        <option value="Impetigo">Impetigo</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Location</label>
+                    <select id="locationSelect" class="form-select">
+                        <option value="">All Locations</option>
+                        <option value="Baringo">Baringo</option>
+                        <option value="Bomet">Bomet</option>
+                        <option value="Bungoma">Bungoma</option>
+                        <option value="Busia">Busia</option>
+                        <option value="Elgeyo-Marakwet">Elgeyo-Marakwet</option>
+                        <option value="Embu">Embu</option>
+                        <option value="Garissa">Garissa</option>
+                        <option value="Homa Bay">Homa Bay</option>
+                        <option value="Isiolo">Isiolo</option>
+                        <option value="Kajiado">Kajiado</option>
+                        <option value="Kakamega">Kakamega</option>
+                        <option value="Kericho">Kericho</option>
+                        <option value="Kiambu">Kiambu</option>
+                        <option value="Kilifi">Kilifi</option>
+                        <option value="Kirinyaga">Kirinyaga</option>
+                        <option value="Kisii">Kisii</option>
+                        <option value="Kisumu">Kisumu</option>
+                        <option value="Kitui">Kitui</option>
+                        <option value="Kwale">Kwale</option>
+                        <option value="Laikipia">Laikipia</option>
+                        <option value="Lamu">Lamu</option>
+                        <option value="Machakos">Machakos</option>
+                        <option value="Makueni">Makueni</option>
+                        <option value="Mandera">Mandera</option>
+                        <option value="Marsabit">Marsabit</option>
+                        <option value="Meru">Meru</option>
+                        <option value="Migori">Migori</option>
+                        <option value="Mombasa">Mombasa</option>
+                        <option value="Murang'a">Murang'a</option>
+                        <option value="Nairobi">Nairobi</option>
+                        <option value="Nakuru">Nakuru</option>
+                        <option value="Nandi">Nandi</option>
+                        <option value="Narok">Narok</option>
+                        <option value="Nyamira">Nyamira</option>
+                        <option value="Nyandarua">Nyandarua</option>
+                        <option value="Nyeri">Nyeri</option>
+                        <option value="Samburu">Samburu</option>
+                        <option value="Siaya">Siaya</option>
+                        <option value="Taita-Taveta">Taita-Taveta</option>
+                        <option value="Tana River">Tana River</option>
+                        <option value="Tharaka-Nithi">Tharaka-Nithi</option>
+                        <option value="Trans Nzoia">Trans Nzoia</option>
+                        <option value="Turkana">Turkana</option>
+                        <option value="Uasin Gishu">Uasin Gishu</option>
+                        <option value="Vihiga">Vihiga</option>
+                        <option value="Wajir">Wajir</option>
+                        <option value="West Pokot">West Pokot</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-primary w-100" onclick="predictOutbreak()">
+                        🔮 Get Prediction
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Predictions List -->
+            <div class="col-md-8">
+                <h3 class="mb-3">📊 Active Predictions</h3>
+                <div id="predictionsContainer">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p class="mt-3">Loading predictions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-md-4">
+                <!-- Trending Diseases -->
+                <div class="stat-card">
+                    <h5 class="mb-3">📈 Trending Diseases</h5>
+                    <div id="trendingContainer">
+                        <small class="text-muted">Loading...</small>
+                    </div>
+                </div>
+
+                <!-- Hotspots -->
+                <div class="stat-card">
+                    <h5 class="mb-3">🔥 Outbreak Hotspots</h5>
+                    <div id="hotspotsContainer">
+                        <small class="text-muted">Loading...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed View Modal -->
+        <div class="modal fade" id="detailModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalTitle">Prediction Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="modalBody">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allPredictions = [];
+
+        // Load all data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllPredictions();
+            loadTrendingDiseases();
+            loadHotspots();
+            populateFilters();
+            
+            // Refresh every 5 minutes
+            setInterval(loadAllPredictions, 300000);
+        });
+
+        async function loadAllPredictions() {
+            try {
+                const response = await fetch('/api/outbreak/all-predictions');
+                const data = await response.json();
+                
+                allPredictions = data.predictions;
+                updateStatistics(data.predictions);
+                displayPredictions(data.predictions);
+            } catch (error) {
+                console.error('Error loading predictions:', error);
+                document.getElementById('predictionsContainer').innerHTML = 
+                    '<div class="alert alert-danger">Error loading predictions</div>';
+            }
+        }
+
+        function updateStatistics(predictions) {
+            const critical = predictions.filter(p => p.risk_level === 'CRITICAL').length;
+            const high = predictions.filter(p => p.risk_level === 'HIGH').length;
+            
+            document.getElementById('criticalCount').textContent = critical;
+            document.getElementById('highCount').textContent = high;
+            document.getElementById('totalPredictions').textContent = predictions.length;
+        }
+
+        function displayPredictions(predictions) {
+            const container = document.getElementById('predictionsContainer');
+            
+            if (predictions.length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No predictions available</div>';
+                return;
+            }
+            
+            container.innerHTML = predictions.map(p => `
+                <div class="prediction-card ${p.risk_level.toLowerCase()}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-2">${p.disease} - ${p.location}</h5>
+                            <div class="mb-2">
+                                <span class="risk-badge risk-${p.risk_level.toLowerCase()}">
+                                    ${p.risk_level} RISK
+                                </span>
+                                <span class="ms-2">
+                                    <span class="confidence-indicator confidence-${p.confidence.toLowerCase()}"></span>
+                                    ${p.confidence} Confidence
+                                </span>
+                            </div>
+                            <p class="mb-2">
+                                <strong>Predicted Cases (7 days):</strong> ${p.predicted_cases_7d}<br>
+                                <strong>Current Average:</strong> ${p.average_daily_cases}/day<br>
+                                <strong>Trend:</strong> 
+                                <span class="${p.trend === 'increasing' ? 'trend-up' : 'trend-down'}">
+                                    ${p.trend === 'increasing' ? '📈' : '📉'} ${p.trend}
+                                </span>
+                            </p>
+                        </div>
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick='showDetails(${JSON.stringify(p).replace(/'/g, "&apos;")})'>
+                            Details →
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadTrendingDiseases() {
+            try {
+                const response = await fetch('/api/outbreak/trending');
+                const data = await response.json();
+                
+                const container = document.getElementById('trendingContainer');
+                
+                if (data.trending_diseases.length === 0) {
+                    container.innerHTML = '<small class="text-muted">No trending diseases</small>';
+                    return;
+                }
+                
+                container.innerHTML = data.trending_diseases.slice(0, 5).map(t => `
+                    <div class="mb-2 p-2 border-start border-danger border-3">
+                        <strong>${t.disease}</strong><br>
+                        <small class="text-danger">
+                            ↑ ${t.percent_change}% increase
+                            (${t.first_period_cases} → ${t.second_period_cases} cases)
+                        </small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading trending:', error);
+            }
+        }
+
+        async function loadHotspots() {
+            try {
+                const response = await fetch('/api/outbreak/hotspots');
+                const data = await response.json();
+                
+                document.getElementById('hotspotCount').textContent = data.hotspots.length;
+                
+                const container = document.getElementById('hotspotsContainer');
+                
+                if (data.hotspots.length === 0) {
+                    container.innerHTML = '<small class="text-muted">No hotspots detected</small>';
+                    return;
+                }
+                
+                container.innerHTML = data.hotspots.slice(0, 5).map(h => `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong>${h.location}</strong>
+                            <span class="hotspot-badge">HOTSPOT</span>
+                        </div>
+                        <small>
+                            ${h.high_risk_diseases} high-risk disease(s)<br>
+                            Risk Score: ${h.risk_score}
+                        </small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading hotspots:', error);
+            }
+        }
+
+        async function predictOutbreak() {
+            const disease = document.getElementById('diseaseSelect').value;
+            const location = document.getElementById('locationSelect').value;
+            
+            if (!disease || !location) {
+                alert('Please select both disease and location');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/outbreak/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ disease, location, days_ahead: 7 })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                showDetails(data);
+                loadAllPredictions(); // Refresh list
+            } catch (error) {
+                console.error('Error predicting:', error);
+                alert('Error making prediction');
+            }
+        }
+
+        function showDetails(prediction) {
+            document.getElementById('modalTitle').textContent = 
+                `${prediction.disease} - ${prediction.location}`;
+            
+            document.getElementById('modalBody').innerHTML = `
+                <div class="mb-3">
+                    <h6>Risk Assessment</h6>
+                    <div class="d-flex gap-2 mb-2">
+                        <span class="risk-badge risk-${prediction.risk_level.toLowerCase()}">
+                            ${prediction.risk_level} RISK
+                        </span>
+                        <span class="badge bg-secondary">${prediction.confidence} Confidence</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>Predictions</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <td>Predicted Cases (7 days):</td>
+                            <td><strong>${prediction.predicted_cases_7d}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Current 14-day Total:</td>
+                            <td>${prediction.current_cases_14d}</td>
+                        </tr>
+                        <tr>
+                            <td>Daily Average:</td>
+                            <td>${prediction.average_daily_cases}</td>
+                        </tr>
+                        <tr>
+                            <td>Trend:</td>
+                            <td class="${prediction.trend === 'increasing' ? 'text-danger' : 'text-success'}">
+                                ${prediction.trend} (${prediction.trend_value > 0 ? '+' : ''}${prediction.trend_value})
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>📅 Daily Forecast</h6>
+                    <canvas id="forecastChart" height="100"></canvas>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>💡 Recommendations</h6>
+                    <ul class="recommendation-list">
+                        ${prediction.recommendations.map(r => `<li>${r}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            
+            // Draw forecast chart
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+            
+            setTimeout(() => {
+                const ctx = document.getElementById('forecastChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: prediction.daily_predictions.map(d => d.date),
+                        datasets: [{
+                            label: 'Predicted Cases',
+                            data: prediction.daily_predictions.map(d => d.predicted_cases),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            }, 300);
+        }
+
+        async function populateFilters() {
+            // Populate disease and location dropdowns
+            try {
+                const diseases = [...new Set(allPredictions.map(p => p.disease))];
+                const locations = [...new Set(allPredictions.map(p => p.location))];
+                
+                const diseaseSelect = document.getElementById('diseaseSelect');
+                const locationSelect = document.getElementById('locationSelect');
+                
+                diseases.forEach(d => {
+                    const option = document.createElement('option');
+                    option.value = d;
+                    option.textContent = d;
+                    diseaseSelect.appendChild(option);
+                });
+                
+                locations.forEach(l => {
+                    const option = document.createElement('option');
+                    option.value = l;
+                    option.textContent = l;
+                    locationSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error populating filters:', error);
+            }
+        }
+    </script>
+</body>
+</html>
