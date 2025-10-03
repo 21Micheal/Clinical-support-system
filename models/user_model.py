@@ -2,7 +2,7 @@ from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-# import psycopg2
+import psycopg2
 from psycopg2 import sql, OperationalError, DatabaseError
 import os
 from extensions import db
