@@ -9,7 +9,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pickle
-import spacy
 from scheduler import init_scheduler
 from render_config import RenderConfig
 
@@ -19,8 +18,6 @@ from dotenv import load_dotenv
 
 from flask_migrate import Migrate
 
-# Load spaCy model
-nlp = spacy.load("en_core_web_sm")
 load_dotenv() 
 
 dashboard_bp = Blueprint('dashboard', __name__)
