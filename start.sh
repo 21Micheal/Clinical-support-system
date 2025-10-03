@@ -1,16 +1,10 @@
 #!/usr/bin/env bash
-# start.sh
 echo "🚀 Starting Flask application on Render..."
 
-# Run database migrations if needed
-echo "📦 Running database migrations..."
-python -c "
-from app import app, db
-with app.app_context():
-    db.create_all()
-    print('✅ Database tables verified')
-"
+# Set up database using separate script
+echo "📦 Setting up database..."
+python setup_database.py
 
 # Start Gunicorn
 echo "🎯 Starting Gunicorn server..."
-exec gunicorn --config gunicorn.conf.py "app:app"
+exec gunicorn --bind=0.0.0.0:10000 --workers=2 --threads=2 --timeout=120 "app:app"
