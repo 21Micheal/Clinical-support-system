@@ -1291,7 +1291,8 @@ def developer():
 def blog():
     return render_template("blog.html")
 
+app = create_app()
+
 if __name__ == '__main__':
-    app = create_app()
-    app.run(debug=True, port=3000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
