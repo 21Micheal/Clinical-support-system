@@ -2,8 +2,7 @@ from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-import psycopg as psycopg2
-from psycopg import sql, OperationalError, DatabaseError
+import psycopg2
 import os
 from extensions import db
 from datetime import datetime
@@ -12,7 +11,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 bcrypt = Bcrypt()
-
+from psycopg2 import OperationalError
 
 # Load environment variables once at module level
 load_dotenv()
