@@ -2,8 +2,8 @@ from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-import psycopg2
-from psycopg2 import sql, OperationalError, DatabaseError
+import psycopg as psycopg2
+from psycopg import sql, OperationalError, DatabaseError
 import os
 from extensions import db
 from datetime import datetime
@@ -218,5 +218,5 @@ def debug_environment():
     print(f"   PG_PASSWORD: {'***SET***' if os.environ.get('PG_PASSWORD') else '❌ NOT SET'}")
 
 # Run debug on import
-debug_environment()
-test_connection()
+# debug_environment()
+# test_connection()
