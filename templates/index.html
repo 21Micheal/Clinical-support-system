@@ -9,194 +9,705 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-      /* Light gradient background */
-      .gradient-bg {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-      }
-      
-      /* Light gradient text */
-      .gradient-text {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-      
-      .glass-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      
-      .status-indicator {
-        transition: all 0.3s ease;
-      }
-      
-      .status-listening { color: #ef4444; }
-      .status-speaking { color: #10b981; }
-      .status-processing { color: #f59e0b; }
-      .status-idle { color: #3b82f6; }
-      
-      .symptom-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 10px;
-        max-height: 300px;
-        overflow-y: auto;
-      }
-      .symptom-item {
-        margin: 5px 0;
-        display: inline-block;
-        width: 30%;
-      }
+      /* General Styles */
 
-      .results-actions {
-          display: flex;
-          gap: 15px;
-          justify-content: center;
-          flex-wrap: wrap;
-          margin: 20px 0;
-      }
+/* Headings */
+.self-evaluation-heading {
+  font-size: 1.35rem;
+  padding: 0 10px;
+}
 
-      .results-actions .btn {
-          min-width: 200px;
-          margin: 5px;
-      }
-      
-      .icon-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        background: white;
-        border-radius: 15px;
-        padding: 25px;
-        text-align: center;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-      
-      .icon-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-      }
-      
-      .voice-btn {
-        transition: all 0.3s ease;
-      }
-      
-      .voice-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
+.diagnosis-heading {
+  font-size: 1.15rem;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
 
-      /* Original results section styling */
-      .icon-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        padding: 30px;
-        border-radius: 15px;
-        background: linear-gradient(135deg, #e3f2fd, #d1ecf1);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        max-width: 800px;
-        margin: 30px auto;
-      }
+/* Light gradient background */
+.gradient-bg {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
 
-      .icon-details {
-        font-size: 16px;
-        color: #333;
-        margin-top: 10px;
-        padding: 10px;
-        background: #ffffff;
-        border-radius: 10px;
-        text-align: center;
-        line-height: 1.6;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
+/* Light gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-      .self-evaluation-heading {
-        font-size: 2rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-      .diagnosis-heading {
-        font-size: 1.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        margin-top: 40px;
-        margin-bottom: 20px;
-        color: #f3eded;
-      }
+.glass-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
 
-      /* Mobile optimizations */
-      @media (max-width: 768px) {
-        .container {
-          padding-left: 15px;
-          padding-right: 15px;
-        }
-        
-        .btn-group {
-          flex-direction: column;
-          gap: 10px;
-        }
-        
-        .symptom-grid {
-          grid-template-columns: 1fr;
-        }
-        
-        .icon-section {
-          padding: 20px;
-          margin: 20px auto;
-        }
-      }
+.status-indicator {
+  transition: all 0.3s ease;
+}
+
+.status-listening {
+  color: #ef4444;
+}
+
+.status-speaking {
+  color: #10b981;
+}
+
+.status-processing {
+  color: #f59e0b;
+}
+
+.status-idle {
+  color: #3b82f6;
+}
+
+.symptom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.symptom-item {
+  margin: 5px 0;
+  display: inline-block;
+  width: 30%;
+}
+
+.results-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.results-actions .btn {
+  min-width: 200px;
+  margin: 5px;
+}
+
+.icon-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.icon-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.voice-btn {
+  transition: all 0.3s ease;
+}
+
+.voice-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Original results section styling */
+.icon-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 30px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #e3f2fd, #d1ecf1);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 30px auto;
+}
+
+.icon-details {
+  font-size: 16px;
+  color: #333;
+  margin-top: 10px;
+  padding: 10px;
+  background: #ffffff;
+  border-radius: 10px;
+  text-align: center;
+  line-height: 1.6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.self-evaluation-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.diagnosis-heading {
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  color: #f3eded;
+}
+
+/* Navigation Base Styles */
+nav {
+  position: relative;
+}
+
+/* Mobile Navigation Menu */
+#menu {
+  transition: all 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  /* Make nav container relative for absolute menu positioning */
+  nav {
+    position: relative;
+    flex-wrap: wrap;
+  }
+
+  /* Hide menu by default on mobile */
+  #menu.hidden {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* Show menu when not hidden */
+  #menu:not(.hidden) {
+    display: flex !important;
+    max-height: 500px;
+    opacity: 1;
+  }
+
+  /* --- MODIFIED MOBILE MENU STYLING --- */
+  #menu {
+    position: absolute;
+    top: 100%;
+    /* Align to the right of the nav container */
+    right: 0;
+    left: unset;
+    transform: none; /* Removed translateX */
+    width: auto;
+    min-width: 150px; /* Minimal width */
+    max-width: 250px;
+    
+    /* Darkish Color and Minimal Look */
+    background: #2D3748; /* Dark gray */
+    flex-direction: column;
+    padding: 4px 0; /* Minimal padding */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    border-radius: 6px;
+    margin-top: 4px; /* Move slightly below the toggle */
+  }
+
+  #menu li {
+    width: 100%;
+    /* Use a dark, slightly lighter border color */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  #menu li:last-child {
+    border-bottom: none;
+  }
+
+  #menu li a {
+    display: block;
+    padding: 8px 16px; /* Reduced padding for minimal look */
+    font-size: 0.9rem;
+    color: #edf2f7; /* Light text color for dark background */
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  #menu li a:hover {
+    /* Slightly lighter dark background on hover */
+    background: #4A5568;
+    padding-left: 20px;
+  }
+  /* --- END MODIFIED MOBILE MENU STYLING --- */
+
+  /* Menu toggle button */
+  #menu-toggle {
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    min-width: unset;
+    width: auto;
+    height: auto;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #menu-toggle:hover {
+    background: rgba(59, 130, 246, 0.1);
+  }
+
+  #menu-toggle:active {
+    transform: scale(0.95);
+  }
+
+  /* Hide desktop search and logout on mobile nav */
+  nav .hidden.md\3a flex,
+  nav .hidden.md\3a block {
+    display: none !important;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Container spacing */
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: 10px;
+    margin-right: 10px;
+    max-width: 100%;
+  }
+
+  /* Hero section */
+  .container.bg-gradient-to-r {
+    padding: 20px 15px;
+    margin: 15px 10px;
+  }
+
+  /* Hero text */
+  .container h1 {
+    font-size: 1.75rem !important;
+  }
+
+  .container h2 {
+    font-size: 1.25rem !important;
+    margin-top: 1rem !important;
+  }
+
+  .container p {
+    font-size: 0.875rem !important;
+    margin-top: 0.5rem !important;
+  }
+
+  /* Voice controls container */
+  .container .flex.flex-col.items-center {
+    margin-top: 1.5rem !important;
+  }
+
+  /* Bot status indicator */
+  #bot-status {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    max-width: 90%;
+  }
+
+  #bot-status i {
+    font-size: 0.875rem;
+  }
+
+  /* Voice and chat buttons */
+  .voice-btn {
+    padding: 10px 16px !important;
+    font-size: 0.8rem !important;
+    min-width: unset !important;
+    width: auto !important;
+    max-width: 100%;
+  }
+
+  .voice-btn i {
+    font-size: 1rem;
+  }
+
+  /* Button container */
+  .flex.gap-3 {
+    flex-direction: row !important;
+    gap: 8px !important;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .flex.gap-3 button {
+    width: auto !important;
+    max-width: 48%;
+    flex: 1 1 auto;
+    min-width: 140px;
+  }
+
+  /* Results actions */
+  .results-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .results-actions .btn {
+    min-width: unset;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  /* Symptom grid */
+  .symptom-grid {
+    grid-template-columns: 1fr;
+    max-height: 250px;
+  }
+
+  .symptom-item {
+    width: 100%;
+    display: block;
+  }
+
+  /* Icon section */
+  .icon-section {
+    padding: 20px 15px;
+    margin: 20px 10px;
+    max-width: 95%;
+  }
+
+  .icon-card {
+    padding: 15px 12px;
+    margin: 8px auto;
+    max-width: 280px;
+  }
+
+  .icon-card i,
+  .icon-card svg {
+    font-size: 2rem !important;
+    max-width: 3rem;
+    max-height: 3rem;
+  }
+
+  .icon-card h3,
+  .icon-card h4 {
+    font-size: 1rem !important;
+    margin-top: 8px;
+  }
+
+  .icon-details {
+    font-size: 0.875rem;
+    padding: 10px;
+    max-width: 100%;
+  }
+
+  /* Form controls */
+  .form-control,
+  .form-select {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+  }
+
+  /* Glass card */
+  .glass-card {
+    padding: 20px 15px !important;
+    margin: 15px 10px !important;
+  }
+
+  /* Outbreak alert */
+  #outbreak-alert {
+    margin: 15px 10px;
+    padding: 12px;
+    font-size: 0.875rem;
+  }
+
+  /* Navigation adjustments */
+  nav {
+    flex-wrap: wrap;
+    padding: 12px 15px;
+    position: relative;
+  }
+
+  /* Logo and title section */
+  nav .flex.items-center.gap-3 {
+    flex: 1;
+  }
+
+  nav img {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  nav a.text-lg {
+    font-size: 1rem;
+  }
+
+  /* Mobile search and logout - moved below menu */
+  nav .flex.items-center.space-x-3 {
+    width: 100%;
+    margin-top: 12px;
+    order: 3;
+    gap: 8px;
+  }
+
+  nav form.flex {
+    flex: 1;
+    max-width: none;
+  }
+
+  nav form input[type="search"] {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  nav form button {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+ /* Logout button on mobile */
+  nav form[action*="logout"] {
+    display: block !important;
+    margin: 0;
+  }
+
+  nav form[action*="logout"] button {
+    padding: 8px 16px;
+    background: #ef4444;
+    color: white;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  #menu-toggle {
+    order: 2;
+    font-size: 1.35rem;
+    padding: 6px 10px;
+    min-width: unset;
+    width: auto;
+    height: auto;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  nav img {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .container {
+    max-width: 90%;
+  }
+
+  .self-evaluation-heading {
+    font-size: 1.75rem;
+  }
+
+  .diagnosis-heading {
+    font-size: 1.5rem;
+  }
+
+  .symptom-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .symptom-item {
+    width: 45%;
+  }
+
+  .results-actions .btn {
+    min-width: 180px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .self-evaluation-heading {
+    font-size: 1.15rem;
+  }
+
+  .diagnosis-heading {
+    font-size: 1rem;
+  }
+
+  .container h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .container h2 {
+    font-size: 1.1rem !important;
+  }
+
+  .container p {
+    font-size: 0.8rem !important;
+  }
+
+  .voice-btn {
+    padding: 8px 12px !important;
+    font-size: 0.75rem !important;
+    min-width: 120px;
+  }
+
+  .voice-btn i {
+    font-size: 0.875rem;
+  }
+
+  #bot-status {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  .icon-card {
+    padding: 12px 10px;
+    max-width: 240px;
+  }
+
+  .icon-card i,
+  .icon-card svg {
+    font-size: 1.5rem !important;
+    max-width: 2.5rem;
+    max-height: 2.5rem;
+  }
+
+  .icon-card h3,
+  .icon-card h4 {
+    font-size: 0.9rem !important;
+  }
+
+  nav {
+    padding: 10px;
+  }
+
+  nav img {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  nav a.text-lg {
+    font-size: 0.9rem;
+  }
+
+  .flex.gap-3 button {
+    min-width: 110px;
+    font-size: 0.7rem !important;
+  }
+}
+
+/* Landscape mode for mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .gradient-bg {
+    min-height: auto;
+  }
+
+  .container.bg-gradient-to-r {
+    padding: 12px 15px;
+    margin: 8px 10px;
+  }
+
+  .container h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .container h2 {
+    font-size: 1.1rem !important;
+    margin-top: 0.5rem !important;
+  }
+
+  .container p {
+    font-size: 0.8rem !important;
+    margin-top: 0.25rem !important;
+  }
+
+  #bot-status {
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
+
+  .voice-btn {
+    padding: 6px 12px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .flex.flex-col.items-center {
+    margin-top: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .flex.gap-3 {
+    gap: 6px !important;
+  }
+}
+
+/* Ensure touch targets are at least 44x44px */
+@media (max-width: 768px) {
+  button,
+  .btn,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
     </style>
   </head>
   <body class="gradient-bg">
 
-    <!-- Navigation -->
     <nav class="bg-blue-100 shadow-md py-3 px-5 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-12 h-12 rounded-full border-2 border-blue-500">
-        <a href="#" class="text-blue-600 text-lg font-bold">Health Center</a>
-      </div>
+        <div class="flex items-center gap-3">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="w-12 h-12 rounded-full border-2 border-blue-500">
+            <a href="#" class="text-blue-600 text-lg font-bold">Health Center</a>
+        </div>
 
-      <button id="menu-toggle" class="text-blue-500 text-2xl md:hidden focus:outline-none">
-        ☰
-      </button>
-
-      <ul id="menu" class="hidden md:flex space-x-6 flex-1 pl-8">
-        <li><a href="#" class="text-blue-600 hover:text-blue-800">Home</a></li>
-        <li><a href="/health_records" class="text-blue-600 hover:text-blue-800">Health Records</a></li>
-        <li><a href="/outbreak-prediction" class="text-blue-600 hover:text-blue-800"> Outbreak Prediction </a></li>
-      </ul>
-
-      <div class="hidden md:flex items-center space-x-3 ml-auto">
-        <form class="flex border border-blue-300 rounded-lg overflow-hidden" action="{{ url_for('dashboard.search_disease') }}" method="get" id="searchForm">
-          <input type="search" name="query" id="searchInput" placeholder="🔍 Search Diseases..."
-                 class="px-3 py-2 focus:outline-none w-48 text-gray-700">
-          <button type="submit" class="bg-blue-500 px-4 text-white">Go</button>
-        </form>
-        <button id="startSearchSpeech" class="text-blue-500 text-lg hover:text-blue-700">
-          🎤
+        <button id="menu-toggle" class="text-blue-500 text-2xl md:hidden focus:outline-none">
+            ☰
         </button>
-      </div>
-      <form action="{{ url_for('auth.logout') }}" method="post" class="hidden md:block ml-4">
-        <button type="submit" class="text-blue-500 hover:text-blue-700">Logout</button>
-      </form>
-    </nav>
+
+        <ul id="menu" class="hidden md:flex space-x-6 flex-1 pl-8">
+            <li><a href="#" class="text-blue-600 hover:text-blue-800">Home</a></li>
+            <li><a href="/health_records" class="text-blue-600 hover:text-blue-800">Health Records</a></li>
+            <li><a href="/outbreak-prediction" class="text-blue-600 hover:text-blue-800"> Outbreak Prediction </a></li>
+            <li class="w-full md:w-auto">
+                <form action="{{ url_for('auth.logout') }}" method="post" class="w-full">
+                    <button type="submit" 
+                            class="w-full text-left px-4 py-2 text-sm font-medium 
+                                  !bg-transparent text-red-400 hover:text-red-300 md:text-blue-600 md:p-0 transition duration-150" 
+                    >Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+
+        <div class="hidden md:flex items-center space-x-3 ml-auto">
+            <form class="flex border border-blue-300 rounded-lg overflow-hidden" action="{{ url_for('dashboard.search_disease') }}" method="get" id="searchForm">
+                <input type="search" name="query" id="searchInput" placeholder="🔍 Search Diseases..."
+                      class="px-3 py-2 focus:outline-none w-48 text-gray-700">
+                <button type="submit" class="bg-blue-500 px-4 text-white">Go</button>
+            </form>
+            <button id="startSearchSpeech" class="text-blue-500 text-lg hover:text-blue-700">
+                🎤
+            </button>
+        </div>
+        
+      </nav>
 
     <!-- Outbreak Alert -->
     <div id="outbreak-alert"
@@ -493,8 +1004,8 @@
             <ul class="mt-2 text-gray-600">
               <li><a href="/about" class="hover:text-green-700">› Privacy Policy</a></li>
               <li><a href="/contact" class="hover:text-green-700">› Stay in Touch</a></li>
-              <li><a href="/developer" class="text-blue-600 hover:text-blue-800">Developer</a></li>
-              <li><a href="/blog" class="text-blue-600 hover:text-blue-800">Blog</a></li>
+              <li><a href="https://michael-wanjala.onrender.com" target="_blank" class="hover:text-green-700">› Developer</a></li>
+              <li><a href="/blog" class="hover:text-green-700">› Blog</a></li>
             </ul>
           </div>
 
@@ -517,53 +1028,107 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
-    <script>
-      // Mobile menu toggle
-      document.getElementById('menu-toggle')?.addEventListener('click', () => {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
         const menu = document.getElementById('menu');
-        menu?.classList.toggle('hidden');
-        menu?.classList.toggle('md:flex');
-        menu?.classList.toggle('absolute');
-        menu?.classList.toggle('top-16');
-        menu?.classList.toggle('left-0');
-        menu?.classList.toggle('w-full');
-        menu?.classList.toggle('bg-white');
-        menu?.classList.toggle('p-4');
-        menu?.classList.toggle('shadow-lg');
-        menu?.classList.toggle('flex-col');
-      });
 
-      // Symptoms list toggle
-      document.querySelector('.toggle-btn')?.addEventListener('click', () => {
-        const symptomList = document.getElementById('symptom-list');
-        if (symptomList) {
-          symptomList.style.display = symptomList.style.display === 'none' ? 'grid' : 'none';
+        if (menuToggle && menu) {
+            // --- 1. Toggle Menu on Button Click ---
+            menuToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // On mobile, just toggle the 'hidden' class
+                if (window.innerWidth < 768) { 
+                    menu.classList.toggle('hidden');
+                }
+
+                // Change icon based on mobile menu state
+                if (menu.classList.contains('hidden') || window.innerWidth >= 768) {
+                    menuToggle.innerHTML = '☰';
+                } else {
+                    menuToggle.innerHTML = '✕';
+                }
+            });
+            
+            // --- 2. Close Menu When Clicking Outside ---
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth < 768 && !menu.contains(e.target) && !menuToggle.contains(e.target)) {
+                    if (!menu.classList.contains('hidden')) {
+                        menu.classList.add('hidden');
+                        menuToggle.innerHTML = '☰';
+                    }
+                }
+            });
+            
+            // --- 3. Close Menu When Clicking a Menu Item (Link) ---
+            const menuLinks = menu.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) {
+                        menu.classList.add('hidden');
+                        menuToggle.innerHTML = '☰';
+                    }
+                });
+            });
+            
+            // --- 4. Handle Window Resize (Crucial for Mobile/Desktop switch) ---
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    // On desktop, ensure the menu's default visibility (md:flex) is respected
+                    menu.classList.remove('hidden');
+                    menuToggle.innerHTML = '☰'; 
+                } else {
+                    // On transition to mobile, ensure icon is correct
+                    if (menu.classList.contains('hidden')) {
+                         menuToggle.innerHTML = '☰';
+                    }
+                }
+            });
+            
+            // Initial check to ensure menu is hidden on mobile load if not needed
+            if (window.innerWidth < 768) {
+                menu.classList.add('hidden');
+            }
         }
-      });
 
-      // Age input validation
-      document.getElementById('age')?.addEventListener('input', (e) => {
-        let value = e.target.value.replace(/[^0-9]/g, '');
-        if (value.length > 2) value = value.slice(0, 2);
-        const numValue = parseInt(value);
-        if (numValue > 99) value = '99';
-        if (numValue < 0) value = '0';
-        e.target.value = value;
-      });
 
-      // Voice chat button fix
-      document.getElementById('startSpeechChat')?.addEventListener('click', function() {
-        if (window.voiceChatbot) {
-          window.voiceChatbot.startVoiceChat();
-        } else {
-          console.log('Voice chatbot not initialized');
-        }
-      });
+            // --- SYMPTOMS LIST TOGGLE (EXISTING) ---
+            document.querySelector('.toggle-btn')?.addEventListener('click', () => {
+                const symptomList = document.getElementById('symptom-list');
+                if (symptomList) {
+                    symptomList.style.display = symptomList.style.display === 'none' ? 'grid' : 'none';
+                }
+            });
 
-      // Open chatbot interface
-      document.getElementById('startChat')?.addEventListener('click', function() {
-        window.open("/chatbot/interface", "_blank");
-      });
+            // --- AGE INPUT VALIDATION (EXISTING) ---
+            document.getElementById('age')?.addEventListener('input', (e) => {
+                let target = e.target;
+                let value = target.value.replace(/[^0-9]/g, '');
+                
+                if (value.length > 2) value = value.slice(0, 2);
+                
+                const numValue = parseInt(value);
+                if (numValue > 99) value = '99';
+                if (numValue < 0) value = '0';
+                
+                target.value = value;
+            });
+
+            // --- VOICE CHAT BUTTON FIX (EXISTING) ---
+            document.getElementById('startSpeechChat')?.addEventListener('click', function() {
+                if (window.voiceChatbot) {
+                    window.voiceChatbot.startVoiceChat();
+                } else {
+                    console.log('Voice chatbot not initialized');
+                }
+            });
+
+            // --- OPEN CHATBOT INTERFACE (EXISTING) ---
+            document.getElementById('startChat')?.addEventListener('click', function() {
+                window.open("/chatbot/interface", "_blank");
+            });
+        });
     </script>
   </body>
 </html>
