@@ -27,4 +27,5 @@ langchain-community==0.0.13
 langchain-pinecone==0.1.0
 pinecone-client==2.2.4
 openai==0.28.1
-grok==0.2.4
+
+groq==0.3.1
