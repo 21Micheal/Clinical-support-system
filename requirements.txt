@@ -24,3 +24,6 @@ beautifulsoup4==4.12.2
 langchain==0.1.0
 langchain-community==0.0.10
 pypdf==3.17.4
+langchain-community==0.0.13
+pinecone-client==2.2.4
+openai==0.28.1
