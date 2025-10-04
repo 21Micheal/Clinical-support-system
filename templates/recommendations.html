@@ -560,7 +560,7 @@
                         {% endif %}
                     {% endfor %}
                 </div>
-                <button class="btn-primary" onclick="submitFollowup()">
+                <button class="btn-primary" id="submit-followup-btn">
                     <i class="fas fa-paper-plane"></i> Submit Answers
                 </button>
             </div>
@@ -591,13 +591,13 @@
             <div class="feedback-section">
                 <h3>Was this information helpful?</h3>
                 <div class="feedback-buttons">
-                    <button class="feedback-btn" onclick="submitFeedback('helpful')">
+                    <button class="feedback-btn" data-feedback-type="helpful">
                         <i class="fas fa-thumbs-up"></i> Very Helpful
                     </button>
-                    <button class="feedback-btn" onclick="submitFeedback('somewhat')">
+                    <button class="feedback-btn" data-feedback-type="somewhat">
                         <i class="fas fa-hand-peace"></i> Somewhat Helpful
                     </button>
-                    <button class="feedback-btn" onclick="submitFeedback('not_helpful')">
+                    <button class="feedback-btn" data-feedback-type="not_helpful">
                         <i class="fas fa-thumbs-down"></i> Not Helpful
                     </button>
                 </div>
@@ -635,7 +635,7 @@
             console.log('📊 Current responses:', followupResponses);
         }
 
-        function submitFollowup(event) {  // ADD event parameter
+        function submitFollowup(event) {
             if (event) event.preventDefault(); // Prevent default if it's a form submission
             
             if (followupResponses.length === 0) {
@@ -657,15 +657,18 @@
             })
             .then(response => response.json())
             .then(data => {
+                const submitButton = document.querySelector('#submit-followup-btn');
+                
                 if (data.success) {
                     alert('✓ Thank you! Your responses have been saved and will help improve your care.');
                     // Optionally disable the submit button
-                    const submitButton = document.querySelector('button[onclick="submitFollowup()"]');
                     if (submitButton) {
+                        // It's best practice to REMOVE the existing listener before disabling/changing state
+                        submitButton.removeEventListener('click', submitFollowup); 
                         submitButton.disabled = true;
                         submitButton.textContent = '✓ Submitted';
                         submitButton.style.background = '#4CAF50';
-                        submitButton.onclick = null; // Remove the click handler
+                        submitButton.onclick = null; // Remove inline click handler if present
                     }
                 } else {
                     alert('Error saving responses: ' + data.message);
@@ -677,7 +680,7 @@
             });
         }
 
-        function submitFeedback(type, event) {  // ADD event parameter
+        function submitFeedback(type, event) {
             if (event) event.preventDefault();
             
             const button = event ? event.target : null;
@@ -748,9 +751,12 @@
                 button.addEventListener('click', (e) => submitFeedback(type, e));
             });
 
-            // Better event listener for submit button (alternative to onclick)
-            const submitButton = document.querySelector('button[onclick="submitFollowup()"]');
+            // 🎯 FIX: Correctly targeting and adding the listener for the followup submit button
+            const submitButton = document.querySelector('#submit-followup-btn');
             if (submitButton) {
+                // Remove any potential duplicate inline handler if it exists
+                submitButton.onclick = null; 
+                // Attach the event listener cleanly using its ID
                 submitButton.addEventListener('click', submitFollowup);
             }
 
