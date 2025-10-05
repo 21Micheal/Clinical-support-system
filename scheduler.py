@@ -22,7 +22,7 @@ class OutbreakScheduler:
     
     def __init__(self, app=None):
         self.scheduler = BackgroundScheduler()
-        self.predictor = OutbreakPredictor()
+        # self.predictor = OutbreakPredictor()
         self.app = app
         
     def init_app(self, app):
@@ -97,8 +97,11 @@ class OutbreakScheduler:
                 
                 for disease, location, case_count in combinations:
                     try:
-                        # Make prediction
-                        result = self.predictor.predict_outbreak(disease, location, days_ahead=7)
+                                    # Create predictor only when needed
+                        predictor = OutbreakPredictor()  # ✅ Fresh instance per job
+                        
+                        for disease, location, case_count in combinations:
+                            result = predictor.predict_outbreak(disease, location, days_ahead=7)
                         
                         if "error" not in result:
                             # Save to database
