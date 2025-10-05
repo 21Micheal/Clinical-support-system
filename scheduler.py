@@ -70,83 +70,83 @@ class OutbreakScheduler:
             self.scheduler.shutdown()
             logger.info("🛑 Outbreak prediction scheduler stopped")
     
-    def run_daily_predictions(self):
-        """
-        Run outbreak predictions for all disease-location combinations
-        Called daily at 6:00 AM
-        """
-        with self.app.app_context():
-            logger.info("🔄 Starting daily outbreak predictions...")
+def run_daily_predictions(self):
+    """
+    Run outbreak predictions for all disease-location combinations
+    Called daily at 6:00 AM
+    """
+    with self.app.app_context():
+        logger.info("🔄 Starting daily outbreak predictions...")
+        
+        try:
+            # Get all disease-location combinations with sufficient data
+            combinations = db.session.query(
+                Predictions.predicted_disease,
+                Predictions.location,
+                func.count(Predictions.id).label('case_count')
+            ).group_by(
+                Predictions.predicted_disease,
+                Predictions.location
+            ).having(func.count(Predictions.id) >= 10).all()
             
-            try:
-                # Get all disease-location combinations with sufficient data
-                combinations = db.session.query(
-                    Predictions.predicted_disease,
-                    Predictions.location,
-                    func.count(Predictions.id).label('case_count')
-                ).group_by(
-                    Predictions.predicted_disease,
-                    Predictions.location
-                ).having(func.count(Predictions.id) >= 10).all()
-                
-                logger.info(f"📊 Found {len(combinations)} disease-location combinations")
-                
-                high_risk_count = 0
-                critical_count = 0
-                predictions_made = 0
-                
-                for disease, location, case_count in combinations:
-                    try:
-                                    # Create predictor only when needed
-                        predictor = OutbreakPredictor()  # ✅ Fresh instance per job
+            logger.info(f"📊 Found {len(combinations)} disease-location combinations")
+            
+            high_risk_count = 0
+            critical_count = 0
+            predictions_made = 0
+            
+            # Create predictor ONCE outside the loop
+            predictor = OutbreakPredictor()
+            
+            for disease, location, case_count in combinations:
+                try:
+                    # Make prediction
+                    result = predictor.predict_outbreak(disease, location, days_ahead=7)
+                    
+                    if "error" not in result:
+                        # Save to database
+                        alert = OutbreakAlert(
+                            disease=disease,
+                            location=location,
+                            risk_level=result['risk_level'],
+                            predicted_cases=result['predicted_cases_7d'],
+                            confidence=result['confidence'],
+                            prediction_data=json.dumps(result),
+                            timestamp=datetime.now()
+                        )
+                        db.session.add(alert)
                         
-                        for disease, location, case_count in combinations:
-                            result = predictor.predict_outbreak(disease, location, days_ahead=7)
+                        predictions_made += 1
                         
-                        if "error" not in result:
-                            # Save to database
-                            alert = OutbreakAlert(
-                                disease=disease,
-                                location=location,
-                                risk_level=result['risk_level'],
-                                predicted_cases=result['predicted_cases_7d'],
-                                confidence=result['confidence'],
-                                prediction_data=json.dumps(result),
-                                timestamp=datetime.now()
-                            )
-                            db.session.add(alert)
-                            
-                            predictions_made += 1
-                            
-                            # Count risks
-                            if result['risk_level'] == 'CRITICAL':
-                                critical_count += 1
-                                self.send_alert_notification(disease, location, result)
-                            elif result['risk_level'] == 'HIGH':
-                                high_risk_count += 1
-                                self.send_alert_notification(disease, location, result)
-                            
-                            logger.info(f"✅ Predicted {disease} in {location}: {result['risk_level']}")
+                        # Count risks
+                        if result['risk_level'] == 'CRITICAL':
+                            critical_count += 1
+                            self.send_alert_notification(disease, location, result)
+                        elif result['risk_level'] == 'HIGH':
+                            high_risk_count += 1
+                            self.send_alert_notification(disease, location, result)
                         
-                    except Exception as e:
-                        logger.error(f"❌ Error predicting {disease} in {location}: {e}")
-                        continue
-                
-                db.session.commit()
-                
-                logger.info(f"""
-                ✅ Daily predictions complete:
-                   - Total predictions: {predictions_made}
-                   - Critical alerts: {critical_count}
-                   - High risk alerts: {high_risk_count}
-                """)
-                
-                # Send summary report
-                self.send_daily_summary(predictions_made, critical_count, high_risk_count)
-                
-            except Exception as e:
-                logger.error(f"❌ Error in daily predictions: {e}")
-                db.session.rollback()
+                        logger.info(f"✅ Predicted {disease} in {location}: {result['risk_level']}")
+                    
+                except Exception as e:
+                    logger.error(f"❌ Error predicting {disease} in {location}: {e}")
+                    continue
+            
+            db.session.commit()
+            
+            logger.info(f"""
+            ✅ Daily predictions complete:
+               - Total predictions: {predictions_made}
+               - Critical alerts: {critical_count}
+               - High risk alerts: {high_risk_count}
+            """)
+            
+            # Send summary report
+            self.send_daily_summary(predictions_made, critical_count, high_risk_count)
+            
+        except Exception as e:
+            logger.error(f"❌ Error in daily predictions: {e}")
+            db.session.rollback()
     
     def retrain_models(self):
         """

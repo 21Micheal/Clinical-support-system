@@ -9,7 +9,6 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import pickle
-from scheduler import init_scheduler
 from render_config import RenderConfig
 
 import requests
@@ -39,16 +38,21 @@ def create_app():
     migrate = Migrate(app, db)
 
     # Only run scheduler in production or main process
-    # This prevents duplicate schedulers in debug/reload mode
     if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-        try:
-            from scheduler import init_scheduler
-            scheduler = init_scheduler(app)
-            print("✅ Outbreak prediction scheduler started")
-        except ImportError as e:
-            print(f"⚠️ Scheduler import failed: {e}")
-        except Exception as e:
-            print(f"⚠️ Scheduler initialization failed: {e}")
+        # Check if we should enable scheduler (disable on free tier)
+        enable_scheduler = os.environ.get('ENABLE_SCHEDULER', 'false').lower() == 'true'
+        
+        if enable_scheduler:
+            try:
+                from scheduler import init_scheduler
+                scheduler = init_scheduler(app)
+                print("✅ Outbreak prediction scheduler started")
+            except ImportError as e:
+                print(f"⚠️ Scheduler import failed: {e}")
+            except Exception as e:
+                print(f"⚠️ Scheduler initialization failed: {e}")
+        else:
+            print("⚠️ Scheduler disabled (set ENABLE_SCHEDULER=true to enable)")
 
     # Register blueprints
     from blueprints.auth_routes import bp as auth_bp
