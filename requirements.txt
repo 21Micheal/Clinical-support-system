@@ -11,17 +11,17 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 
-# Essential utilities
-fuzzywuzzy==0.18.0
-python-Levenshtein==0.21.1
+# Data processing (lighter versions)
 pandas==2.1.4
 numpy==1.26.2
 scikit-learn==1.3.2
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.21.1
 requests==2.31.0
 apscheduler==3.10.4
 joblib==1.3.2
 
-# RAG/Chatbot (lightweight)
+# Chatbot - NO torch/transformers for now
 langchain==0.1.20
 langchain-community==0.0.38
 langchain-pinecone==0.1.0
@@ -29,5 +29,5 @@ langchain-core==0.1.52
 pinecone-client==3.2.2
 groq==0.32.0
 
-# Only if you MUST use HuggingFace embeddings locally
-sentence-transformers==3.0.1
+# Only add sentence-transformers if you enable chatbot
+# sentence-transformers==3.0.1
