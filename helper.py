@@ -21,22 +21,25 @@ def split_documents(documents, chunk_size: int = 500, chunk_overlap: int = 20):
     text_chunks = splitter.split_documents(documents)
     return text_chunks
 
-def initialize_embeddings(model_name: str = 'sentence-transformers/all-MiniLM-L6-v2'):
+def initialize_embeddings():
     """
-    Initialize Hugging Face embeddings with caching.
+    Use HuggingFace Inference API instead of local models
     """
-    import os
+    hf_token = os.getenv('HUGGINGFACE_API_KEY')
     
-    # Set cache directory to persist across requests
-    cache_dir = os.getenv('HF_HOME', '/tmp/huggingface_cache')
-    os.makedirs(cache_dir, exist_ok=True)
+    if not hf_token:
+        # Fallback to local model (only if absolutely necessary)
+        from langchain_community.embeddings import HuggingFaceEmbeddings
+        return HuggingFaceEmbeddings(
+            model_name='sentence-transformers/all-MiniLM-L6-v2',
+            model_kwargs={'device': 'cpu'}
+        )
     
-    embeddings = HuggingFaceEmbeddings(
-        model_name=model_name,
-        cache_folder=cache_dir,
-        model_kwargs={'device': 'cpu'}  # Ensure CPU usage
+    # Use API (no local model download!)
+    return HuggingFaceInferenceAPIEmbeddings(
+        api_key=hf_token,
+        model_name="sentence-transformers/all-MiniLM-L6-v2"
     )
-    return embeddings
 
 # Split the data into text chunks
 def text_split(extracted_data):

@@ -1,3 +1,4 @@
+# Core Flask
 Flask==2.3.3
 Werkzeug==2.3.7
 Flask-SQLAlchemy==3.0.5
@@ -9,7 +10,8 @@ WTForms==3.0.1
 gunicorn==21.2.0
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
-torch==2.1.0
+
+# Essential utilities
 fuzzywuzzy==0.18.0
 python-Levenshtein==0.21.1
 pandas==2.1.4
@@ -18,16 +20,14 @@ scikit-learn==1.3.2
 requests==2.31.0
 apscheduler==3.10.4
 joblib==1.3.2
-transformers==4.35.2
-sentence-transformers==3.0.1
-datasets==2.14.0
-beautifulsoup4==4.12.2
+
+# RAG/Chatbot (lightweight)
 langchain==0.1.20
-pypdf==3.17.4
-pyarrow==14.0.1
 langchain-community==0.0.38
 langchain-pinecone==0.1.0
 langchain-core==0.1.52
 pinecone-client==3.2.2
-openai==0.28.1
 groq==0.32.0
+
+# Only if you MUST use HuggingFace embeddings locally
+sentence-transformers==3.0.1
