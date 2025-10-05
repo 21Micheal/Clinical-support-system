@@ -14,6 +14,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from helper import initialize_embeddings
 
+chatbot_instance = None
+chatbot_lock = None
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -124,13 +127,26 @@ class RAGChatbot:
                 "error": str(e)
             }
 
-# Global instance with error handling
-try:
-    chatbot_instance = RAGChatbot()
-    logger.info("✅ Chatbot instance created successfully")
-except Exception as e:
-    logger.error(f"❌ Failed to create chatbot instance: {str(e)}")
-    chatbot_instance = None
+def get_chatbot():
+    """Lazy load chatbot instance - only when first request comes in"""
+    global chatbot_instance, chatbot_lock
+    
+    if chatbot_instance is None:
+        if chatbot_lock is None:
+            import threading
+            chatbot_lock = threading.Lock()
+        
+        with chatbot_lock:
+            if chatbot_instance is None:
+                try:
+                    logger.info("🔄 Initializing chatbot (first request)...")
+                    chatbot_instance = RAGChatbot()
+                    logger.info("✅ Chatbot instance created successfully")
+                except Exception as e:
+                    logger.error(f"❌ Failed to create chatbot instance: {str(e)}")
+                    raise
+    
+    return chatbot_instance
 
 
 @chatbot_bp.route('/ask', methods=['POST'])
@@ -139,8 +155,9 @@ def ask_chatbot():
     Handles chatbot queries using RAG with Groq.
     """
     try:
+        chatbot = get_chatbot() 
         # Check if chatbot is available
-        if chatbot_instance is None:
+        if chatbot is None:
             return jsonify({
                 "error": "Chatbot service is currently unavailable",
                 "success": False

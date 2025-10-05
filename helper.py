@@ -23,11 +23,20 @@ def split_documents(documents, chunk_size: int = 500, chunk_overlap: int = 20):
 
 def initialize_embeddings(model_name: str = 'sentence-transformers/all-MiniLM-L6-v2'):
     """
-    Initialize Hugging Face embeddings.
+    Initialize Hugging Face embeddings with caching.
     """
-    embeddings = HuggingFaceEmbeddings(model_name=model_name)
+    import os
+    
+    # Set cache directory to persist across requests
+    cache_dir = os.getenv('HF_HOME', '/tmp/huggingface_cache')
+    os.makedirs(cache_dir, exist_ok=True)
+    
+    embeddings = HuggingFaceEmbeddings(
+        model_name=model_name,
+        cache_folder=cache_dir,
+        model_kwargs={'device': 'cpu'}  # Ensure CPU usage
+    )
     return embeddings
-
 
 # Split the data into text chunks
 def text_split(extracted_data):
