@@ -21,13 +21,18 @@ requests==2.31.0
 apscheduler==3.10.4
 joblib==1.3.2
 
-# Chatbot (no torch needed!)
+# PyTorch (CPU-only for memory efficiency)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1+cpu
+
+# ML/NLP (requires torch)
+sentence-transformers==3.0.1
+transformers==4.35.2
+
+# Chatbot
 langchain==0.1.20
 langchain-community==0.0.38
 langchain-pinecone==0.1.0
 langchain-core==0.1.52
 pinecone-client==3.2.2
 groq==0.32.0
-
-# Only if using local embeddings (adds ~200MB with dependencies)
-# sentence-transformers==3.0.1
