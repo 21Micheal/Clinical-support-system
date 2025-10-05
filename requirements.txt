@@ -11,7 +11,7 @@ gunicorn==21.2.0
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
 
-# Data processing (lighter versions)
+# Data processing
 pandas==2.1.4
 numpy==1.26.2
 scikit-learn==1.3.2
@@ -21,7 +21,7 @@ requests==2.31.0
 apscheduler==3.10.4
 joblib==1.3.2
 
-# Chatbot - NO torch/transformers for now
+# Chatbot (no torch needed!)
 langchain==0.1.20
 langchain-community==0.0.38
 langchain-pinecone==0.1.0
@@ -29,5 +29,5 @@ langchain-core==0.1.52
 pinecone-client==3.2.2
 groq==0.32.0
 
-# Only add sentence-transformers if you enable chatbot
+# Only if using local embeddings (adds ~200MB with dependencies)
 # sentence-transformers==3.0.1
